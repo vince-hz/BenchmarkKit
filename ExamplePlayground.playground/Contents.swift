@@ -15,12 +15,12 @@ struct ContentView: View {
         .frame(width: 320, height: 480)
         .onAppear {
             Task {
-                for i in 0 ..< 5 {
-                    for j in 0 ..< 5 {
+                for i in 0 ..< 3 {
+                    for j in 0 ..< 3 {
                         BenchmarkKit.measureWork(
                             MeasureInput(
-                                taskName: "xxx",
-                                impLabel: "yyy",
+                                taskName: "x \(i)",
+                                impLabel: "sync y \(j)",
                                 resourceCaseLabel: "zzz",
                                 performQueue: .main,
                                 performTimes: 3,
@@ -28,8 +28,11 @@ struct ContentView: View {
                                     done("some prepared input")
                                 },
                                 syncWork: { prepared in
-                                    print("this is prepared data.", prepared)
+//                                    print("this is prepared data.", prepared)
                                     // do some sync work.
+                                    for _ in 0 ..< 100000 {
+                                        _ = 1 + 1
+                                    }
                                 },
                                 finishedHandler: { _ in }
                             )
@@ -37,15 +40,20 @@ struct ContentView: View {
 
                         BenchmarkKit.measureWork(
                             MeasureInput(
-                                taskName: "xxx",
-                                impLabel: "yyy",
+                                taskName: "x \(i)",
+                                impLabel: "async y \(j)",
                                 resourceCaseLabel: "zzz",
                                 performQueue: .main,
                                 performTimes: 3,
                                 prepare: { done in done("some prepared input") },
                                 asyncWork: { prepared, done in
-                                    print("this is prepared data.", prepared)
-                                    done()
+//                                    print("this is prepared data.", prepared)
+                                    DispatchQueue.global().async {
+                                        for _ in 0 ..< 100000 {
+                                            _ = 1 + 1
+                                        }
+                                        done()
+                                    }
                                 },
                                 finishedHandler: { _ in }
                             )
