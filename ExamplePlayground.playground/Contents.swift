@@ -15,27 +15,47 @@ struct ContentView: View {
         .frame(width: 320, height: 480)
         .onAppear {
             Task {
-                for i in 0..<5 {
-                    for j in 0..<5 {
+                for i in 0 ..< 5 {
+                    for j in 0 ..< 5 {
                         BenchmarkKit.measureWork(
-                            .init(
-                                label: "Type \(i)",
-                                subLabel: "SubType \(j)",
-                                identifier: "Identi",
+                            MeasureInput(
+                                taskName: "xxx",
+                                impLabel: "yyy",
+                                resourceCaseLabel: "zzz",
                                 performQueue: .main,
-                                performTimes: 1,
-                                prepare: { prepareDoneCallback in
-                                    prepareDoneCallback(1)
+                                performTimes: 3,
+                                prepare: { done in
+                                    done("some prepared input")
                                 },
-                                syncWork: { _ in
+                                syncWork: { prepared in
+                                    print("this is prepared data.", prepared)
+                                    // do some sync work.
                                 },
-                                finishedHandler: { _ in
-                                }
+                                finishedHandler: { _ in }
+                            )
+                        )
+
+                        BenchmarkKit.measureWork(
+                            MeasureInput(
+                                taskName: "xxx",
+                                impLabel: "yyy",
+                                resourceCaseLabel: "zzz",
+                                performQueue: .main,
+                                performTimes: 3,
+                                prepare: { done in done("some prepared input") },
+                                asyncWork: { prepared, done in
+                                    print("this is prepared data.", prepared)
+                                    done()
+                                },
+                                finishedHandler: { _ in }
                             )
                         )
                     }
                 }
                 let results = await BenchmarkKit.main()
+                let report = BenchmarkKit.report(results: results)
+                print(report)
+                let formView = BenchmarkKit.formView(results: results, title: "some title")
                 wrapper = MeasureResultWrapper(results: results)
             }
         }
